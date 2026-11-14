@@ -11,7 +11,12 @@ Ce dépôt contient seulement les **versions publiées**, pas le code source.
 | Système | Fichier | Contenu |
 |---|---|---|
 | macOS (Apple Silicon et Intel) | `MixCheck-<version>-macOS.dmg` | Application, plug-ins AU, VST3, CLAP |
-| Windows | `MixCheck-<version>-Windows.zip` | Application, plug-ins VST3 et CLAP, outil en ligne de commande |
+| Windows | `MixCheck-<version>-Windows.zip` | Application, plug-ins VST3 et CLAP, outil en ligne de commande (pas encore disponible pour la 0.2.1) |
+
+Chaque version est accompagnée de l'empreinte **SHA-256** du DMG (fichier `.sha256`), pour vérifier que le téléchargement est intact. Cette vérification est facultative :
+```bash
+shasum -a 256 ~/Downloads/MixCheck-<version>-macOS.dmg
+```
 
 ## Installer
 
@@ -20,7 +25,7 @@ Ce dépôt contient seulement les **versions publiées**, pas le code source.
 2. Double-cliquez sur **« Installer les plug-ins.command »** : il copie les plug-ins AU, VST3 et CLAP dans `~/Library/Audio/Plug-Ins`.
 3. Relancez le DAW. Les plug-ins se trouvent chez le fabricant **MixCheck**.
 
-Si macOS refuse d'ouvrir l'application parce qu'elle provient d'un développeur non identifié, ouvrez **Réglages Système › Confidentialité et sécurité**, puis cliquez sur **Ouvrir quand même**. Vous pouvez aussi faire un clic droit sur l'application, puis **Ouvrir**.
+L'application et les plug-ins sont **signés et notarisés par Apple** : macOS les ouvre normalement, après un simple message de confirmation au premier lancement.
 
 ### Windows
 1. Décompressez le zip.
@@ -29,7 +34,7 @@ Si macOS refuse d'ouvrir l'application parce qu'elle provient d'un développeur 
 
 ## Mises à jour
 
-Au lancement, MixCheck vérifie s'il existe une version plus récente sur ce dépôt. Si c'est le cas, un bouton **« Mise à jour x.y.z »** apparaît en haut à droite. **Télécharger** ouvre la page de la version. **Ignorer cette version** masque le bouton jusqu'à la suivante. Vous pouvez désactiver cette vérification dans les **Réglages** (roue crantée), avec l'option **Vérifier les mises à jour au lancement**. Aucune donnée n'est envoyée : MixCheck lit seulement le numéro de la dernière version.
+À partir de la version 0.2.2, au lancement, MixCheck vérifie s'il existe une version plus récente sur ce dépôt. Si c'est le cas, un bouton **« Mise à jour x.y.z »** apparaît en haut à droite. **Télécharger** ouvre la page de la version. **Ignorer cette version** masque le bouton jusqu'à la suivante. Vous pouvez désactiver cette vérification dans les **Réglages** (roue crantée), avec l'option **Vérifier les mises à jour au lancement**. Aucune donnée n'est envoyée : MixCheck lit seulement le numéro de la dernière version.
 
 ## Signaler un problème
 
