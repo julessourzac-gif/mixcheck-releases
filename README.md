@@ -1,6 +1,6 @@
 # MixCheck
 
-**Validation de mix avant livraison** : clics, pops, thumps, silences sans ambiance, ronflette, crêtes et écrêtage, problèmes de phase, et conformité loudness / dynamique aux normes du streaming, du broadcast et des plateformes vidéo.
+**Validation de mix avant livraison** : clics, pops, thumps, silences sans ambiance, ronflette, crêtes et écrêtage, problèmes de phase, et conformité loudness / dynamique aux normes du streaming, du broadcast et des plateformes vidéo. Vous pouvez aussi comparer le mix à un fichier de référence (normes et référence masquées dans l'interface pendant la bêta : voir *Ce que MixCheck vérifie*).
 
 Ce dépôt contient seulement les **versions publiées** (pas le code source) : voir *Télécharger* ci-dessous.
 
@@ -88,28 +88,30 @@ Pour l'instant, une seule page : **les événements à écouter**. Les onglets L
 - **Offset DC** : composante continue au-dessus de -40 dBFS pendant au moins 2 s, canal par canal.
 - **Début / fin coupés** (fichiers) : le fichier commence ou finit en plein signal, sans silence ni fondu.
 
+Pendant la bêta, l'interface n'affiche que **les événements** (défauts audio, silences, crêtes, phase). Les mesures, les normes et la référence décrites plus bas sont masquées dans l'interface et reviendront dans une prochaine version ; en attendant, seule la ligne de commande `mixcheck-cli` les produit (rapports HTML / JSON).
+
 **Crêtes**
 - True peak (ITU-R BS.1770-4, suréchantillonnage ×4).
 - Crête échantillon.
 - Dépassements horodatés.
 
-**Loudness et dynamique**
+**Loudness et dynamique** (onglet Loudness, masqué pendant la bêta)
 - Mesures EBU R128 : intégré (gating), momentary, short-term, Loudness Range (EBU Tech 3342).
 - **Loudness dialogue** : loudness mesuré uniquement pendant la parole, comme le demandent Netflix et Disney+. La parole est repérée par un détecteur intégré. Le pourcentage de parole est affiché, et les zones détectées apparaissent en vert sur l'historique pour vérification.
 - PLR, PSR médian, facteur de crête.
 
-**Phase et stéréo**
+**Phase et stéréo** : les passages hors phase et les inversions de polarité sont signalés comme événements ; corrélation, goniomètre et compatibilité mono sont dans l'onglet Loudness, masqué pendant la bêta.
 - Corrélation globale et par bande (graves, médiums, aigus), et goniomètre.
 - Compatibilité mono : perte de loudness en repli mono.
 - Inversion de polarité, passages hors phase, retard entre L et R, balance, largeur.
 
-**Normes** : chaque critère reçoit un statut PASS / WARN / FAIL, avec explication.
+**Normes** (onglet masqué pendant la bêta) : chaque critère reçoit un statut PASS / WARN / FAIL, avec explication.
 - Streaming : Spotify, Apple Music, YouTube, Tidal, Amazon Music, Deezer, SoundCloud, podcasts.
 - Broadcast : EBU R128, R128 s1, ATSC A/85, ARIB TR-B32, OP-59.
 - Vidéo : Netflix, Amazon Prime Video, Disney+.
 - **Profils personnalisés**, éditables dans l'interface.
 
-**Référence** : chargez un master du commerce ou une version validée (WAV, AIFF, FLAC…) :
+**Référence** (onglet masqué pendant la bêta) : chargez un master du commerce ou une version validée (WAV, AIFF, FLAC…) :
 - comparaison des loudness, PLR, LRA et largeur stéréo ;
 - **balance tonale à loudness égal**, par bandes de 1/3 d'octave ;
 - **écoute alignée en loudness** : Mix, Référence ou Fichier analysé ;
@@ -118,7 +120,7 @@ Pour l'instant, une seule page : **les événements à écouter**. Les onglets L
 ![Référence](docs/images/reference.png)
 
 **Exports** (bouton **Export**)
-- Rapports : HTML lisible, JSON complet.
+- Rapports : HTML lisible, JSON complet (pendant la bêta, avec `mixcheck-cli` seulement : ils ne figurent plus dans le menu **Export**).
 - Liste d'événements en CSV.
 - Marqueurs pour le DAW : **fichier MIDI** (Pro Tools, Logic, Cubase…), **CSV Reaper**, **labels Audacity**.
 - **Marqueurs dans le fichier (iZotope RX)** : voir ci-dessous.
