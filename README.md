@@ -2,6 +2,8 @@
 
 **Validation de mix avant livraison** : clics, pops, thumps, silences sans ambiance, ronflette, crêtes et écrêtage, problèmes de phase, et conformité loudness / dynamique aux normes du streaming, du broadcast et des plateformes vidéo.
 
+Dans cette version, l'interface (plugin et application) se concentre sur les **événements à écouter**. Les mesures de loudness, la conformité aux normes et la comparaison à une référence sont calculées par le même moteur, mais ne sont accessibles que par la **ligne de commande** : leurs onglets sont masqués.
+
 Ce dépôt contient seulement les **versions publiées** (pas le code source) : voir *Télécharger* ci-dessous.
 
 MixCheck existe sous trois formes, toutes construites sur le même moteur d'analyse :
@@ -10,7 +12,7 @@ MixCheck existe sous trois formes, toutes construites sur le même moteur d'anal
 |---|---|
 | **Plugin** VST3 · AU · CLAP | Inséré sur le bus master du DAW : analyse pendant la lecture ou pendant l'export hors ligne. Les événements sont positionnés sur la timeline du DAW. |
 | **Application** autonome (macOS, Windows) | Même interface que le plugin. Elle analyse un fichier audio, ou une entrée audio (carte son). |
-| **`mixcheck-cli`** | Analyse en ligne de commande, rapports JSON / HTML et code de sortie pour les scripts de livraison ou la CI. |
+| **`mixcheck-cli`** | Analyse en ligne de commande : événements, loudness, normes et référence, rapports JSON / HTML et code de sortie pour les scripts de livraison ou la CI. |
 
 ![Contrôle, thème sombre](docs/images/controle-sombre.png)
 
@@ -54,13 +56,14 @@ Pendant la bêta, MixCheck est **gratuit et entièrement débloqué**, sans limi
 
 Pour l'instant, une seule page : **les événements à écouter**. Les onglets Loudness, Référence et Normes sont masqués dans cette version.
 
-- Leur nombre par type, la timeline du fichier, **zoomable**, avec un bouton **lecture / stop**, des filtres par type et la liste.
+- Leur nombre par type, la timeline du fichier, **zoomable**, avec un bouton **lecture / stop**, des filtres par type et la liste (temps, type, canaux, valeur, durée, confiance).
 - Sélectionner un événement l'écoute **de 1 s avant à 1 s après**, puis la lecture s'arrête seule.
-- **Réglages** (roue crantée, en haut à droite) : activation et sensibilité de chaque détecteur, seuil true peak (-1, -2 ou -3 dBTP), analyse dans le DAW et **LINK DAW** (lien avec la timeline du DAW). **Analyse** applique les réglages au fichier affiché. **Français / English** (en haut à droite des Réglages) choisit la langue de l'interface, des exports et des marqueurs : le choix est enregistré et s'applique tout de suite (par défaut, la langue du système). **Vérifier les mises à jour au lancement** active ou coupe la notification de nouvelle version ; la **version installée** y est affichée.
+- **Réglages** (roue crantée, en haut à droite) : activation et sensibilité de chaque détecteur, seuil true peak (-1, -2 ou -3 dBTP), analyse dans le DAW (seulement pendant la lecture, remise à zéro à chaque lecture) et **LINK DAW** (lien avec la timeline du DAW). **Analyse** applique les réglages au fichier affiché. **Français / English** (en haut à droite des Réglages) choisit la langue de l'interface, des exports et des marqueurs : le choix est enregistré et s'applique tout de suite (par défaut, la langue du système). **Vérifier les mises à jour au lancement** active ou coupe la notification de nouvelle version ; la **version installée** y est affichée.
 
 - **Thème sombre ou clair** : bouton lune / soleil en haut à droite. Le choix est mémorisé ; au premier lancement, MixCheck suit le thème du système.
 - **Export** (à droite de la ligne du fichier, à côté de **Analyse**) : CSV, marqueurs MIDI, Reaper ou Audacity, ou **marqueurs dans le fichier pour iZotope RX** (voir plus bas).
 - **Mise à jour x.y.z** (en haut à droite) : apparaît quand une version plus récente est publiée (voir *Mises à jour*).
+- **Pastille ambre** sur la roue crantée : le début de session du lien DAW n'est pas renseigné (voir *Lien avec le DAW*).
 - Polices **Inter** et **JetBrains Mono**, embarquées.
 
 ![Contrôle, thème clair](docs/images/controle-clair.png)
@@ -68,6 +71,10 @@ Pour l'instant, une seule page : **les événements à écouter**. Les onglets L
 ![Réglages des détecteurs](docs/images/reglages.png)
 
 ## Ce que MixCheck vérifie
+
+### Événements, dans l'interface et la ligne de commande
+
+Les détecteurs s'activent dans les **Réglages** ; clics et pops, thumps et silences ont trois sensibilités (Basse, Moyenne, Haute).
 
 **Défauts audio**
 - **Clics** : impulsions de moins de 2 ms (coupe sans fondu, dépassement CPU, erreur numérique).
@@ -80,7 +87,6 @@ Pour l'instant, une seule page : **les événements à écouter**. Les onglets L
 **Silences sans ambiance** (dialogue)
 - **Silence numérique** : le son tombe à zéro au milieu du programme, typiquement un trou de montage sans ambiance de comblement. Le silence de tête et de fin est normal et n'est pas signalé.
 - **Trou d'ambiance** : le fond sonore chute nettement sous l'ambiance mesurée autour, sans aller jusqu'au zéro. Causes typiques : raccord sans ambiance, gate ou débruitage trop agressif.
-- Niveau d'ambiance estimé, en dBFS.
 
 **Livraison TV** (contrôles courants des QC broadcast : EBU QC, Netflix, diffuseurs)
 - **Ronflette** : raie stable à 50 ou 60 Hz, ou à leurs harmoniques (100, 150, 120, 180 Hz), pendant au moins 6 s, au-dessus de -80 dBFS. Une note de musique tenue n'est pas prise pour le secteur.
@@ -89,13 +95,18 @@ Pour l'instant, une seule page : **les événements à écouter**. Les onglets L
 - **Début / fin coupés** (fichiers) : le fichier commence ou finit en plein signal, sans silence ni fondu.
 
 **Crêtes**
-- True peak (ITU-R BS.1770-4, suréchantillonnage ×4).
-- Crête échantillon.
-- Dépassements horodatés.
+- Dépassements du seuil **true peak** (ITU-R BS.1770-4, suréchantillonnage ×4), réglable à -1, -2 ou -3 dBTP.
+
+### Mesures et conformité, en ligne de commande pour l'instant
+
+Ces mesures figurent dans les rapports HTML et JSON de `mixcheck-cli`. Leurs onglets (Loudness, Référence, Normes) sont masqués dans l'interface de cette version.
+
+**Crêtes** : true peak, crête échantillon, dépassements horodatés.
 
 **Loudness et dynamique**
 - Mesures EBU R128 : intégré (gating), momentary, short-term, Loudness Range (EBU Tech 3342).
-- **Loudness dialogue** : loudness mesuré uniquement pendant la parole, comme le demandent Netflix et Disney+. La parole est repérée par un détecteur intégré. Le pourcentage de parole est affiché, et les zones détectées apparaissent en vert sur l'historique pour vérification.
+- **Loudness dialogue** : loudness mesuré uniquement pendant la parole, comme le demandent Netflix et Disney+. La parole est repérée par un détecteur intégré ; le pourcentage de parole est indiqué.
+- Niveau d'ambiance estimé, en dBFS.
 - PLR, PSR médian, facteur de crête.
 
 **Phase et stéréo**
@@ -107,21 +118,21 @@ Pour l'instant, une seule page : **les événements à écouter**. Les onglets L
 - Streaming : Spotify, Apple Music, YouTube, Tidal, Amazon Music, Deezer, SoundCloud, podcasts.
 - Broadcast : EBU R128, R128 s1, ATSC A/85, ARIB TR-B32, OP-59.
 - Vidéo : Netflix, Amazon Prime Video, Disney+.
-- **Profils personnalisés**, éditables dans l'interface.
+- **Profils personnalisés** : créés depuis une référence (`--profile-from-reference`).
 
-**Référence** : chargez un master du commerce ou une version validée (WAV, AIFF, FLAC…) :
+**Référence** (`-r`) : un master du commerce ou une version validée (WAV, AIFF, FLAC…) :
 - comparaison des loudness, PLR, LRA et largeur stéréo ;
 - **balance tonale à loudness égal**, par bandes de 1/3 d'octave ;
-- **écoute alignée en loudness** : Mix, Référence ou Fichier analysé ;
-- création d'un profil de conformité à partir de la référence.
+- création d'un profil de conformité à partir de la référence (`--profile-from-reference`).
 
-![Référence](docs/images/reference.png)
+## Exports
 
-**Exports** (bouton **Export**)
-- Rapports : HTML lisible, JSON complet.
-- Liste d'événements en CSV.
-- Marqueurs pour le DAW : **fichier MIDI** (Pro Tools, Logic, Cubase…), **CSV Reaper**, **labels Audacity**.
+Bouton **Export**, à droite de la ligne du fichier :
+- **Événements CSV** ;
+- marqueurs pour le DAW : **Marqueurs MIDI** (Pro Tools, Logic, Cubase…), **Marqueurs Reaper** (CSV), **Labels Audacity** ;
 - **Marqueurs dans le fichier (iZotope RX)** : voir ci-dessous.
+
+Les rapports **HTML** (lisible) et **JSON** (complet) sont produits par la ligne de commande (`--html`, `--json`).
 
 ### Marqueurs pour iZotope RX
 En mode Fichier, **Export › Marqueurs dans le fichier (iZotope RX)…** ouvre une fenêtre où l'on coche les **types d'événements** à marquer (au départ : ceux affichés par les filtres). Chaque événement devient un marqueur inscrit dans le WAV (chunks `cue` et `adtl`, lus par iZotope RX, WaveLab, Sound Forge, Audition) ; les défauts d'au moins 0,1 s deviennent des **régions**. Le nom du marqueur reprend la description de l'événement (« Clic (L) -8,6 dBFS »), en ASCII pour s'afficher partout.
@@ -132,6 +143,8 @@ En mode Fichier, **Export › Marqueurs dans le fichier (iZotope RX)…** ouvre 
 
 - **Ouvrir automatiquement dans RX** (case à côté de **Enregistrer une copie…**) : une fois les marqueurs écrits (dans le fichier ou dans la copie), le fichier s'ouvre directement dans RX. Le choix est enregistré et retrouvé aux ouvertures suivantes. MixCheck lance la version la plus récente installée (macOS : `/Applications/iZotope RX … Audio Editor.app` ; Windows : `Program Files\iZotope\…`) ; **Choisir… / Changer…** désigne une autre application.
 
+![Marqueurs pour iZotope RX](docs/images/marqueurs-rx.png)
+
 Dans RX, les marqueurs apparaissent sur la timeline et dans la fenêtre *Markers & Regions*. Si le fichier y est déjà ouvert, fermez-le d'abord pour relire les nouveaux marqueurs.
 
 ## Utilisation
@@ -141,7 +154,7 @@ Dans RX, les marqueurs apparaissent sur la timeline et dans la fenêtre *Markers
 2. Lancez la lecture, ou un **export hors ligne** : le plugin attend l'analyse, aucun échantillon n'est perdu.
 3. La page liste les événements détectés, positionnés sur la timeline du DAW : **un double-clic sur un événement place la tête de lecture du DAW sur ce temps** (voir *Lien avec le DAW*).
 
-Les résultats, le profil et la référence sont enregistrés avec le projet.
+Les résultats et les réglages sont enregistrés avec le projet.
 
 ### Application autonome
 - **Live** analyse l'entrée audio choisie dans les options de l'application. Un **vumètre d'entrée** (crête par canal et loudness momentary) montre que le signal arrive.
@@ -164,14 +177,14 @@ Un double-clic sur un événement envoie aussi le DAW à cet endroit. Le début 
 ![Contrôle : timeline zoomée sur un événement en cours d'écoute](docs/images/controle-zoom.png)
 
 ### Lien avec le DAW
-Le bouton **LINK DAW**, dans les **Réglages** (roue crantée), ouvre les réglages du lien ; son état est affiché à côté (pastille verte : prêt).
+Le bouton **LINK DAW**, dans les **Réglages** (roue crantée), ouvre les réglages du lien ; son état est affiché à côté (pastille verte : prêt). **Méthode** : *Automatique* (API de REAPER si elle est disponible, sinon MMC), *MMC* ou *Désactivé*.
 
 | DAW | Fonctionnement | Réglage |
 |---|---|---|
 | **REAPER** (VST3, CLAP) | API de REAPER : la tête de lecture va exactement au temps | Aucun |
 | **Pro Tools** | Commande MIDI Machine Control « Locate » sur le port MIDI virtuel « MixCheck » (ou un bus IAC) | Configuration › Périphériques › Machine Control › « MIDI Machine Control Remote (Slave) » coché, même ID que dans **LINK DAW** (127 par défaut), entrée « MixCheck ». Le port doit aussi être coché dans Configuration › MIDI › Périphériques d'entrée MIDI |
 | **Logic Pro** | Idem | Réglages du projet › Synchronisation › MIDI › « Écouter l'entrée MMC », entrée « MixCheck » |
-| **Cubase / Nuendo** | Idem | Configuration de la synchronisation du projet › « MMC Slave Active », entrée MMC « MixCheck » |
+| **Cubase / Nuendo** | Idem | Transport › Configuration de la synchronisation du projet › « MMC Slave Active », entrée MMC « MixCheck » |
 | Studio One, Ableton Live | Pas de MMC Locate : le temps est copié dans le presse-papiers | — |
 
 - Le port virtuel « MixCheck » existe tant que MixCheck est ouvert (macOS, Linux). Sous Windows, il n'y a pas de port virtuel : créez-en un avec loopMIDI et choisissez-le dans **LINK DAW**.
@@ -202,7 +215,7 @@ Codes de sortie : `0` conforme ou avertissements, `2` non conforme (selon le pre
 
 ## Limites connues
 - **Loudness dialogue** : c'est une approximation de Dolby Dialogue Intelligence, l'outil propriétaire utilisé par Netflix et Disney+. Sur nos tests de parole française synthétique, l'écart est de 0,1 à 0,8 LU. Le chant peut être compté comme parole, et une voix très traitée ou noyée peut être sous-détectée.
-- **Langue** : les noms des paramètres vus par le DAW (automation) prennent la langue choisie au chargement du plugin ; après un changement, ils suivent au prochain chargement. Les messages des normes et le rapport HTML (masqués dans cette version) restent en français, comme la ligne de commande.
+- **Langue** : les noms des paramètres vus par le DAW (automation) prennent la langue choisie au chargement du plugin ; après un changement, ils suivent au prochain chargement. La ligne de commande, ses rapports et les messages des normes restent en français.
 - Les détecteurs de défauts sont des **heuristiques**. Chaque événement porte un indice de confiance et doit être confirmé à l'écoute. Trois réglages de sensibilité existent : Basse, Moyenne, Haute.
 - **Windows** : pas encore de zip publié pour la 0.2.x.
 - Les valeurs des normes évoluent. Vérifiez le cahier des charges de votre diffuseur. Les profils intégrés indiquent leur source et leur date.
